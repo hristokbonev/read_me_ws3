@@ -1,177 +1,242 @@
-<img src="https://webassets.telerikacademy.com/images/default-source/logos/telerik-academy.svg)" alt="logo" width="300px" style="margin-top: 20px;"/>
+<img src="https://webassets.telerikacademy.com/images/default-source/logos/telerik-academy.svg" alt="logo" width="300px" style="margin-top: 20px;"/>
 
-# TestReporter - Test Reporting System
+# BoardR - Task Organizing System
 
-## Description
+_Part 4_
 
-TestReporter is a tool for monitoring the testing process of a large distributed web application. Most of the tool is implemented, but several features need finishing. While implementing the missing functionality, we will also practice:
-- Inheritance (by subclassing commands)
-- Abstraction (by treating different commands in a similar manner)
-- Polymorphism (by overriding inherited functionality)
-- Duck typing (by calling the same method on different objects)
+## 1. Description
 
-### Models
-- **TestGroup** - a model that represents a group of tests with `name` and a `collection of Tests`
-- **Test** - a model that represents a test with `id`, `description` and a `collection of TestRuns`
-- **TestRun** - a model that represents a single run of an automated test - has a `test_result` (pass/fail) and `runtime` (in milliseconds)
+**BoardR** is a task-management system which will evolve in the next several weeks. During the course of the project, we will follow the best practices of `Object-Oriented Programming` and `Design`.
 
-### Features
-- **Add TestGroup** - creates a test group with Name and next available TestGroupId
-- **Add Test** - creates a new Test with the next available TestId and description and adds it to an existing TestGroup (found by id)
-- **Add TestRun** - creates a TestRun, and adds it to an existing Test (found by id)
-- **Test Report** - generates a report for a Test (found by id), printing information about the case and the associated TestRuns
-- **Remove Group** - removes a group of tests (identified by id)
-- **View Group** - prints information about a group (identified by id)
-- **View System** - prints information about all groups
+## 2. Goals
+- Practice **Composition** and **Has-A Relationship** by introducing a `user` as an instance of a class `User`. Refactor where necessary.
+- Practice **Multiple Inheritance** - we will create `EditableBoard` and `ReadonlyBoard`
 
-## Tasks
-### 1. Models
-Already implemented. You are allowed to modify them in any way that you find suitable
+## 3. Class User
 
-### 2. Engine class
-The `start` method has to be implemented. Its behavior is roughly the following:
+### Description
 
-    1. read input
-    2. find suitable command to execute
-    3. print the result of the command (or store for printing later)
-    4. stop if you reached the end command
+Instances of this class will be used to provide information about the user who is working on a given `task`.
 
-You can check the engine class of the previous workshops if you feel stuck.
+### Initializer & Attributes
 
-**Note** - in this workshop, we **do not have to handle exceptions**. There is no invalid input.
+- **username**: _str_; should not be empty and should be unique
+- **email**: _str_; should contain the symbol `@`
+- **assigned_tasks**: _list_; the tasks assigned to this user. Should be maximum **3 tasks** on status `TODO` or `IN_PROGRESS`.
 
-### 3. CommandFactory class
-The `create` method has to be implemented. Its responsibility is the following:
+### Properties
 
-    1. receive the input
-    2. determine which command is requested
-    3. create and return the correct command
+- **username**: _str_ - getter-only
+- **email**: _str_ - getter and setter
+- **assigned_tasks**: _tuple_ - getter-only
+- **capacity**: _int_ - returns how many more tasks could be assigned to this user
 
-### 4. ApplicationData class
-The class has to be finished. It should support the following functionality
-- add a testgroup
-- find testgroup by id
-- remove testgroup by id
-- find test by id
+> **Hint I**: To ensure the uniqueness of the username, consider adding a collection of all users in the Board.
+>
 
-### 5. Commands
-Check the sample output for the results and formatting of each command. You can use https://www.diffchecker.com/ to compare your output with the sample output. 
+### Methods
 
-You need to implement the following classes. You can subclass from the provided `BaseCommand` to get access to the shared properties of all commands.
+- `advance_task_status(task)` - advances the `status` of a task if this user is the assignee of the task and the task is either on status `TODO` or on status `IN_PROGRESS` e.g. from `TODO` to `IN_PROGRESS` or from `IN_PROGRESS` to `DONE`.
 
-- `AddTestGroup` (params: name) - creates a new TestGroup with the given **name** and stores in the AppData. TestGroupIds must be sequential (first - 1, second - 2, etc).
-- `AddTest` (params: test_group_id, description) - creates a new test with the given **description** and adds it to the test group with the given **test_group_id**. TestIds must also be sequential.
-- `AddTestRun` (params: test_id, result, runtime) - adds a new test run with the given **result** and **runtime** and adds it to the test with the given **test_id**
-- `RemoveGroup` (params: test_group_id) - removes a group, specified by the given **test_group_id** and also removes all its tests along with their testruns
-- `TestReport` (params: test_id) - returns formatted information about a test with the given **test_id**. Formatting:
-    ```
-    #{test_id}. [{test_description}]: {test_runs_count} runs
-    - Passing: {passing_runs_count}
-    - Failing: {failing_runs_count}
-    - Total runtime: {total_runtime}ms
-    - Average runtime: {avg_runtime:.1f}ms
-    ```
-- `ViewGroup` (params: test_group_id) - returns formatted information about a group with the given **test_group_id**. Formatting:
-    ```
-    #{group_id}. {group_name} ({tests_count} tests)
-      #{test_id}. [{test_description}]: {test_runs_count} runs
-      #{test_id}. [{test_description}]: {test_runs_count} runs
-    ```
-- `ViewSystem` (no params) - returns formatted information about the Test Reporter System. Formatting:
-    ```
-    Test Reporter System ({test_groups_count} test groups)
-      #{group_id}. {group_name} ({tests_count} tests)
-      #{group_id}. {group_name} ({tests_count} tests)
-    ```
-### Hints
+> **Hint II** - For this method consider reusing the `advance_status()` method in the **BoardItem** class
+> 
 
-#### Step 1:
-Start with implementing the AddTestGroup command. It is the easiest. What it does is the following:
+- `receive_task(task)` - adds the task to the collection of `assigned_tasks` of this user. If there is no capacity, raise ValueError.
 
-    1. create a new TestGroup with the provided name and the next available id
-    2. do not forget to increment the id, and *remember* it somewhere
-    3. add the created TestGroup to the ApplicationData - you should have access to it from the inheritted BaseCommand
-    4. return a message
+- `remove_task(task)` - removes a task from the collection of assigned tasks if it exists, if not, raise ValueError.
 
-#### Step 2:
-When you have the command, you can write a portion of the CommandFactory's implementation - check if the input line starts with the command name and if yes, create and return a new AddTestGroup command instance
+> **Hint III** - Think about refactoring other parts of the code to make sure everything works as expected e.g. in class Task, the initializer accepts now assignee as an instance of `class User`, not a `str` and also you do not need the validation for the length of the username there.
 
-#### Step 3:
-Now you can finish the `start` method of the engine class - use the factory to create a new command, execute it, and print or store the results for printing later
-
-#### Step 4:
-Test the program with only input that is related to adding testgroups.
-Do it several times to be sure that testgroupids are sequentially generated.
-
-#### Step 5:
-Repeat (without step 3) for each of the remaining commands.  
-Along the way you will likely need to add new methods to the ApplicationData class - for example for removing testgroups
+> **Hint IV** - Think about the options you have to get a proper representation of the user for when you have already used it in the code e.g. in the logs/history.
 
 
-### Example input
+#### Example
+
+```python
+steven = User("Steven", "steven@asd.com")
+print(f"Steven capacity: {steven.capacity}") # 3
+print(f"Steven assigned tasks: {steven.assigned_tasks}") # ()
+
+task = Task('Test the application flow', steven, add_days_to_now(2))
+steven.receive_task(task)
+print(f"Steven capacity: {steven.capacity}") # 2
+print(f"Steven assigned tasks: {[task.info() for task in steven.assigned_tasks]}") # Steven assigned tasks: ['Task (assigned to: Steven) Test the application flow, [Todo | 2023-07-16]']
+
+steven.remove_task(task)
+print(f"Steven capacity: {steven.capacity}") # 3
+print(f"Steven assigned tasks: {steven.assigned_tasks}") # ()
 
 ```
-addtestgroup TransactionTests
-addtest 1 ShouldWork_WhenToldTo
-addtestrun 1 fail 10
-addtestrun 1 pass 15
-addtestrun 1 fail 17
-addtestrun 1 fail 8
-testreport 1
-addtest 1 MustWork!_OnlyWhenCorrect
-addtestrun 2 pass 3
-addtestrun 2 pass 15
-addtestrun 2 fail 74
-addtestrun 2 pass 63
-viewgroup 1
-testreport 2
-addtestgroup UITests
-addtest 2 BtnClick_ActuallyClicks
-addtestrun 3 pass 8
-addtestrun 3 pass 3
-addtestrun 3 pass 5
-viewsystem
-removegroup 1
-viewsystem
-end
+
+## 4. Extend the Board Class
+
+### Description
+
+We will extend the Board so that it keeps information about the existing users.
+
+### Attributes
+- **_users**: _list_:  private attribute that would keep all existing users.
+
+### Properties
+
+- **team_capacity**: _int_: will return a number of all tasks that the team can handle with the existing users
+
+### Methods
+
+- **add_user(username, email)** - accept `username` and `email` as parameters and creates the user. If the **username** exists, raise ValueError. After validating the username authenticity and creating the user, we have to make sure the information for the existing users is updated in the collection of users.
+
+- **reassign_task(task, new_assignee)** - the task is reassigned to `new_assignee`, removed from the **assigned_tasks** collection of the
+ `current_assignee`. If the task does not exist or the assignee tries to assign the task to themselves raise ValueError. When reassigning tasks, they are always moved to the new `assignee` on status **TODO**. 
+
+```python
+board = Board()
+steven = board.add_user("Steven", "steven@asd.bg")
+task = Task('Test the application flow', steven, add_days_to_now(2))
+steven.receive_task(task)
+print(f"Capacity of the team: {board.team_capacity}") # Capacity of the team: 2
+
+peter = board.add_user("Peter", "peter@asd.bg")
+print(f"Capacity of the team: {board.team_capacity}") #Capacity of the team: 5
 ```
 
-### Example output
+> **Hint I** - For reverting the status think about reusing the method `revert_status` in **BoardItem**.
+
+Test code Input:
+```python
+board = Board()
+steven = board.add_user("Steven", "steven@asd.bg")
+task1 = Task('Test the application flow', steven, add_days_to_now(2))
+steven.receive_task(task1)
+board.add_item(task1)
+print(f"Capacity of the team: {board.team_capacity}")
+peter = board.add_user("Peter", "peter@asd.bg")
+print(f"Capacity of the team: {board.team_capacity}")
+print("============================================")
+task2 = Task('Fix authentication', steven, add_days_to_now(2))
+board.add_item(task2)
+peter.receive_task(task2)
+print(f"Capacity of the team: {board.team_capacity}")
+print(task1.status)
+steven.advance_task_status(task1)
+print(task1.status)
+board.reassign_task(task1, peter)
+print(f"Steven assigned tasks: {steven.assigned_tasks}")
+print(f"Peter assigned tasks: {[task.info() for task in peter.assigned_tasks]}")
+print(task1.status)
+peter.advance_task_status(task1)
+print(task1.status)
+peter.advance_task_status(task1)
+print(task1.status)
+print(f"Capacity of the team: {board.team_capacity}")
+print(task1.history())
+```
+
+```python
+Capacity of the team: 2
+Capacity of the team: 5
+============================================
+Capacity of the team: 4
+Todo
+In progress
+Steven assigned tasks: ()
+Peter assigned tasks: ['Task (assigned to: Peter) Fix authentication, [Todo | 2023-07-16]', 'Task (assigned to: Peter) Test the application flow, [Todo | 2023-07-16]']
+Todo
+In progress
+Done
+Capacity of the team: 5
+[07/14/2023, 16:25:58] Task created: Test the application flow
+[07/14/2023, 16:25:58] Assignee changed from Steven to Steven
+[07/14/2023, 16:25:58] Status changed from Todo to In progress
+[07/14/2023, 16:25:58] Status changed from In progress to Todo
+[07/14/2023, 16:25:58] Assignee changed from Steven to Peter
+[07/14/2023, 16:25:58] Status changed from Todo to In progress
+[07/14/2023, 16:25:58] Status changed from In progress to Done
 
 ```
-Group #1 created
-Test #1 added to group #1
-TestRun registered
-TestRun registered
-TestRun registered
-TestRun registered
-#1. [ShouldWork_WhenToldTo]: 4 runs
-- Passing: 1
-- Failing: 3
-- Total runtime: 50ms
-- Average runtime: 12.5ms
-Test #2 added to group #1
-TestRun registered
-TestRun registered
-TestRun registered
-TestRun registered
-#1. TransactionTests (2 tests)
-  #1. [ShouldWork_WhenToldTo]: 4 runs
-  #2. [MustWork!_OnlyWhenCorrect]: 4 runs
-#2. [MustWork!_OnlyWhenCorrect]: 4 runs
-- Passing: 3
-- Failing: 1
-- Total runtime: 155ms
-- Average runtime: 38.8ms
-Group #2 created
-Test #3 added to group #2
-TestRun registered
-TestRun registered
-TestRun registered
-Test Reporter System (2 test groups)
-  #1. TransactionTests (2 tests)
-  #2. UITests (1 tests)
-Group #1 removed
-Test Reporter System (1 test groups)
-  #2. UITests (1 tests)
+
+## 5. Editable and Readonly Board
+We will design the following two classes:
+**EditableBoard**
+    - `add_item()`
+    - `remove_item()`
+    - `count`
+**ReadonlyBoard**
+    - `add_item()`
+    - `count`
+One approach would be to subclass **EditableBoard** from **ReadonlyBoard** and add the `remove_item` method. This is ok, but we will practice another technique here - **Multiple Inheritance**.  
+We need a class that provides each piece of functionality:
+1. `Board`
+    - initializer - initializes the `_items` collection
+    - count property - returns the number of items in the `_items` collection
+2. `CanAddItem`
+    - `add_item(item: BoardItem)` - checks if this item exists, and if not, add it to the `_items` collection
+3. `CanRemoveItem`
+    - `remove_item(item: BoardItem)` - removes the item from `_items` collection
+
+**Note** - neither `CanAddItem`, nor `CanRemoveItem` can exist individually - they trust that a class that provides `_items` will inherit them
+
+CanRemoveItem example:
+```python
+class CanRemoveItem:
+    def remove_item(self, item: BoardItem):
+        # remove the item from self._items
 ```
+
+Now that we have the building blocks, we can create the `Editable` and `Readonly` boards
+- `ReadonlyBoard` = `Board` + `CanAddItem`
+- `EditableBoard` = `Board` + `CanAddItem` + `CanRemoveItem`
+
+ReadonlyBoard example:
+```python
+class ReadonlyBoard(Board, CanAddItem):
+    pass # no additional code is really required here. All the functionality is inherited
+```
+
+Test code:
+```python
+issue = Issue('App flow tests?', 'We need to test the flow!', add_days_to_now(1))
+
+readonly_board = ReadonlyBoard()
+steven = readonly_board.add_user("Steven", "steven@asd.bg")
+task = Task('Dont refactor anything', steven, add_days_to_now(2))
+
+readonly_board.add_item(issue)  # method from CanAddItem
+readonly_board.add_item(task)
+print(readonly_board.count)  # 2     # property from Board
+
+editable_board = EditableBoard()
+editable_board.add_item(issue)  # method from CanAddItem
+editable_board.remove_item(issue)  # method from CanRemoveItem
+print(editable_board.count)  # 0     # property from Board
+```
+
+
+## 6. Optional - Refactor the Project structure
+- We have more than 10 files in our project, and the structure is starting to become a little messy
+- If you haven't created any folders so far, all the files will be at one place and it will begin to look confusing
+- If you have written your files in organized folders, you can skip this step
+- Otherwise, try to logically organize the files. One possible approach is:
+    
+```none
+board/
+   board.py
+   can_add_item.py
+   can_remove_item.py
+   editable_board.py
+   readonly_board.py
+board_items/
+   board_item.py
+   issue.py
+   item_status.py
+   task.py
+event_logging/
+   event_log.py
+user/
+   user.py
+main.py
+```
+
+- **Note** import paths will change, for example:   
+    `from readonly_board import ReadonlyBoard`   
+    will become  
+    `form board.readonly_board import ReadonlyBoard`  
