@@ -1,242 +1,714 @@
-<img src="https://webassets.telerikacademy.com/images/default-source/logos/telerik-academy.svg" alt="logo" width="300px" style="margin-top: 20px;"/>
+﻿<img src="https://webassets.telerikacademy.com/images/default-source/logos/telerik-academy.svg" alt="logo" width="300px" style="margin-top: 20px;"/>
 
-# BoardR - Task Organizing System
+## OOP Workshop - Car Dealership
 
-_Part 4_
+The Car Dealership already has a working Engine. **You do not have to touch anything in it.** Just use it. 
 
-## 1. Description
+There are three types of vehicles in the Car Dealership for now, **Car**, **Motorcycle** and **Truck**.
+Each of the vehicles has **make**, **model**, **wheels count** and **price**.
 
-**BoardR** is a task-management system which will evolve in the next several weeks. During the course of the project, we will follow the best practices of `Object-Oriented Programming` and `Design`.
+- The **Car** type has **seats**
+- The **Motorcycle** type has a **category**
+- The **Truck** type has a **weight capacity**
 
-## 2. Goals
-- Practice **Composition** and **Has-A Relationship** by introducing a `user` as an instance of a class `User`. Refactor where necessary.
-- Practice **Multiple Inheritance** - we will create `EditableBoard` and `ReadonlyBoard`
+There are users in the Vehicle Dealership as well.
 
-## 3. Class User
+- The users can **GetVehicle**, **AddVehicle**, **RemoveVehicle**, **AddComment** and **RemoveComment**
+- Every user has collection of **Vehicles** and every **Vehicle** in this collection has collection of **Comments**.
+- Users should **register** and **login** before doing anything in the Car Dealership. If a user is not logged or there is another user logged in he cannot do anything. This is already implemented and you are not expected to do anything here (but you can still figure out how it works :) ).
 
-### Description
+### Design the classes
 
-Instances of this class will be used to provide information about the user who is working on a given `task`.
+Your task is to design an object-oriented system to model a Car Dealership. Avoid duplicated code though abstraction, inheritance, and polymorphism and encapsulate correctly all attributes.
 
-### Initializer & Attributes
+***
 
-- **username**: _str_; should not be empty and should be unique
-- **email**: _str_; should contain the symbol `@`
-- **assigned_tasks**: _list_; the tasks assigned to this user. Should be maximum **3 tasks** on status `TODO` or `IN_PROGRESS`.
+## IMPORTANT
+IF YOU ARE UNSURE WHAT METHODS/ATTRIBUTES TO IMPLEMENT IN THE UNFINISHED CLASSES, **LOOK AT THE UNIT TESTS** 
 
-### Properties
+***
 
-- **username**: _str_ - getter-only
-- **email**: _str_ - getter and setter
-- **assigned_tasks**: _tuple_ - getter-only
-- **capacity**: _int_ - returns how many more tasks could be assigned to this user
+### Validation
 
-> **Hint I**: To ensure the uniqueness of the username, consider adding a collection of all users in the Board.
->
+**The error messages and all the constraints for each attribute that must be validated can be *found in the example output*. 
+If you are unsure about some constraints, run the tests.You already have the error messages in the proper classes.**
 
-### Methods
+- Vehicle validation
+  - Make and model length.
+  - Price range
+  - Wheels count
+  - Seats count (for car)
+  - Category length (for motorcycle)
+  - Weight capacity (for truck)
 
-- `advance_task_status(task)` - advances the `status` of a task if this user is the assignee of the task and the task is either on status `TODO` or on status `IN_PROGRESS` e.g. from `TODO` to `IN_PROGRESS` or from `IN_PROGRESS` to `DONE`.
+- Motorcycle wheels are **always 2**
+- Car wheels are **always 4**
+- Truck wheels are **always 8**
 
-> **Hint II** - For this method consider reusing the `advance_status()` method in the **BoardItem** class
-> 
+- Comment validation
+  - Content
 
-- `receive_task(task)` - adds the task to the collection of `assigned_tasks` of this user. If there is no capacity, raise ValueError.
+- User Validation
+  - Username, FirstName, LastName and Password lengths
 
-- `remove_task(task)` - removes a task from the collection of assigned tasks if it exists, if not, raise ValueError.
+**All properties in the above classes are mandatory (cannot be empty).**
 
-> **Hint III** - Think about refactoring other parts of the code to make sure everything works as expected e.g. in class Task, the initializer accepts now assignee as an instance of `class User`, not a `str` and also you do not need the validation for the length of the username there.
+### User Properties
 
-> **Hint IV** - Think about the options you have to get a proper representation of the user for when you have already used it in the code e.g. in the logs/history.
-
-
-#### Example
-
-```python
-steven = User("Steven", "steven@asd.com")
-print(f"Steven capacity: {steven.capacity}") # 3
-print(f"Steven assigned tasks: {steven.assigned_tasks}") # ()
-
-task = Task('Test the application flow', steven, add_days_to_now(2))
-steven.receive_task(task)
-print(f"Steven capacity: {steven.capacity}") # 2
-print(f"Steven assigned tasks: {[task.info() for task in steven.assigned_tasks]}") # Steven assigned tasks: ['Task (assigned to: Steven) Test the application flow, [Todo | 2023-07-16]']
-
-steven.remove_task(task)
-print(f"Steven capacity: {steven.capacity}") # 3
-print(f"Steven assigned tasks: {steven.assigned_tasks}") # ()
-
-```
-
-## 4. Extend the Board Class
-
-### Description
-
-We will extend the Board so that it keeps information about the existing users.
-
-### Attributes
-- **_users**: _list_:  private attribute that would keep all existing users.
-
-### Properties
-
-- **team_capacity**: _int_: will return a number of all tasks that the team can handle with the existing users
-
-### Methods
-
-- **add_user(username, email)** - accept `username` and `email` as parameters and creates the user. If the **username** exists, raise ValueError. After validating the username authenticity and creating the user, we have to make sure the information for the existing users is updated in the collection of users.
-
-- **reassign_task(task, new_assignee)** - the task is reassigned to `new_assignee`, removed from the **assigned_tasks** collection of the
- `current_assignee`. If the task does not exist or the assignee tries to assign the task to themselves raise ValueError. When reassigning tasks, they are always moved to the new `assignee` on status **TODO**. 
-
-```python
-board = Board()
-steven = board.add_user("Steven", "steven@asd.bg")
-task = Task('Test the application flow', steven, add_days_to_now(2))
-steven.receive_task(task)
-print(f"Capacity of the team: {board.team_capacity}") # Capacity of the team: 2
-
-peter = board.add_user("Peter", "peter@asd.bg")
-print(f"Capacity of the team: {board.team_capacity}") #Capacity of the team: 5
-```
-
-> **Hint I** - For reverting the status think about reusing the method `revert_status` in **BoardItem**.
-
-Test code Input:
-```python
-board = Board()
-steven = board.add_user("Steven", "steven@asd.bg")
-task1 = Task('Test the application flow', steven, add_days_to_now(2))
-steven.receive_task(task1)
-board.add_item(task1)
-print(f"Capacity of the team: {board.team_capacity}")
-peter = board.add_user("Peter", "peter@asd.bg")
-print(f"Capacity of the team: {board.team_capacity}")
-print("============================================")
-task2 = Task('Fix authentication', steven, add_days_to_now(2))
-board.add_item(task2)
-peter.receive_task(task2)
-print(f"Capacity of the team: {board.team_capacity}")
-print(task1.status)
-steven.advance_task_status(task1)
-print(task1.status)
-board.reassign_task(task1, peter)
-print(f"Steven assigned tasks: {steven.assigned_tasks}")
-print(f"Peter assigned tasks: {[task.info() for task in peter.assigned_tasks]}")
-print(task1.status)
-peter.advance_task_status(task1)
-print(task1.status)
-peter.advance_task_status(task1)
-print(task1.status)
-print(f"Capacity of the team: {board.team_capacity}")
-print(task1.history())
-```
-
-```python
-Capacity of the team: 2
-Capacity of the team: 5
-============================================
-Capacity of the team: 4
-Todo
-In progress
-Steven assigned tasks: ()
-Peter assigned tasks: ['Task (assigned to: Peter) Fix authentication, [Todo | 2023-07-16]', 'Task (assigned to: Peter) Test the application flow, [Todo | 2023-07-16]']
-Todo
-In progress
-Done
-Capacity of the team: 5
-[07/14/2023, 16:25:58] Task created: Test the application flow
-[07/14/2023, 16:25:58] Assignee changed from Steven to Steven
-[07/14/2023, 16:25:58] Status changed from Todo to In progress
-[07/14/2023, 16:25:58] Status changed from In progress to Todo
-[07/14/2023, 16:25:58] Assignee changed from Steven to Peter
-[07/14/2023, 16:25:58] Status changed from Todo to In progress
-[07/14/2023, 16:25:58] Status changed from In progress to Done
-
-```
-
-## 5. Editable and Readonly Board
-We will design the following two classes:
-**EditableBoard**
-    - `add_item()`
-    - `remove_item()`
-    - `count`
-**ReadonlyBoard**
-    - `add_item()`
-    - `count`
-One approach would be to subclass **EditableBoard** from **ReadonlyBoard** and add the `remove_item` method. This is ok, but we will practice another technique here - **Multiple Inheritance**.  
-We need a class that provides each piece of functionality:
-1. `Board`
-    - initializer - initializes the `_items` collection
-    - count property - returns the number of items in the `_items` collection
-2. `CanAddItem`
-    - `add_item(item: BoardItem)` - checks if this item exists, and if not, add it to the `_items` collection
-3. `CanRemoveItem`
-    - `remove_item(item: BoardItem)` - removes the item from `_items` collection
-
-**Note** - neither `CanAddItem`, nor `CanRemoveItem` can exist individually - they trust that a class that provides `_items` will inherit them
-
-CanRemoveItem example:
-```python
-class CanRemoveItem:
-    def remove_item(self, item: BoardItem):
-        # remove the item from self._items
-```
-
-Now that we have the building blocks, we can create the `Editable` and `Readonly` boards
-- `ReadonlyBoard` = `Board` + `CanAddItem`
-- `EditableBoard` = `Board` + `CanAddItem` + `CanRemoveItem`
-
-ReadonlyBoard example:
-```python
-class ReadonlyBoard(Board, CanAddItem):
-    pass # no additional code is really required here. All the functionality is inherited
-```
-
-Test code:
-```python
-issue = Issue('App flow tests?', 'We need to test the flow!', add_days_to_now(1))
-
-readonly_board = ReadonlyBoard()
-steven = readonly_board.add_user("Steven", "steven@asd.bg")
-task = Task('Dont refactor anything', steven, add_days_to_now(2))
-
-readonly_board.add_item(issue)  # method from CanAddItem
-readonly_board.add_item(task)
-print(readonly_board.count)  # 2     # property from Board
-
-editable_board = EditableBoard()
-editable_board.add_item(issue)  # method from CanAddItem
-editable_board.remove_item(issue)  # method from CanRemoveItem
-print(editable_board.count)  # 0     # property from Board
-```
+  - username - length [2:20], only letters and/or digits
+  - firstname - length [2:20]
+  - lastname - length [2:20]
+  - password - length [5:30], can contain only letters, digits, and the special symbols `@, *, -, _`
+  - user_role - one of `Admin, Normal, VIP`
+  - is_admin -> bool
+  - vehicles - list 
 
 
-## 6. Optional - Refactor the Project structure
-- We have more than 10 files in our project, and the structure is starting to become a little messy
-- If you haven't created any folders so far, all the files will be at one place and it will begin to look confusing
-- If you have written your files in organized folders, you can skip this step
-- Otherwise, try to logically organize the files. One possible approach is:
-    
+### User actions
+
+- Get vehicle by index
+  - Returns reference to the vehicle at the specified index
+  - Error if invalid index
+
+- Adding a vehicle
+  - If the user is admin he cannot add a vehicle
+  - If the user is not VIP he cannot add more than 5 vehicles
+
+- Adding a comment 
+  - Create a comment for the vehicle and add it to the vehicle's comments
+
+- Remove a vehicle 
+  - Just remove the vehicle from the list
+
+- Remove a comment
+  - If the author of the comment is not the current user he cannot remove it
+
+### Printing
+
+- For the User class
+
+`Username: {Username}, FullName: {FirstName} {LastName}, Role: {Role}`
+
+- For all vehicles of the user
+
 ```none
-board/
-   board.py
-   can_add_item.py
-   can_remove_item.py
-   editable_board.py
-   readonly_board.py
-board_items/
-   board_item.py
-   issue.py
-   item_status.py
-   task.py
-event_logging/
-   event_log.py
-user/
-   user.py
-main.py
+--USER {Username}--
+1. {Vehicle type}:
+  Make: {Make}
+  Model: {Model}
+  Wheels: {Wheels}
+  Price: ${Price}
+  Category/Weight capacity/Seats: {Category/Weight capacity/Seats}
+  --COMMENTS--
+  ----------
+  {Content}
+  User: {Comment Username}
+  ----------
+  ----------
+  {Content}
+  User: {Comment username}
+  ----------
+  --COMMENTS--
+2. {Vehicle type}:
+  Make: {Make}
+  Model: {Model}
+  Wheels: {Wheels}
+  Price: ${Price}
+  Category/Weight capacity/Seats: {Category/Weight capacity/Seats}
+  --NO COMMENTS--
 ```
 
-- **Note** import paths will change, for example:   
-    `from readonly_board import ReadonlyBoard`   
-    will become  
-    `form board.readonly_board import ReadonlyBoard`  
+- **The dashes separating the comments are exactly 10.**
+- **Price has `$` in front of the value and is rounded to two digits after the decimal point** *(e.g. `Price: $10000.00`)*
+
+*Hint - one approach to achieve such formatting:*
+
+```python
+f'{price:.2f}'
+```
+
+- **The weight capacity has `t` after the value** *(e.g. `Weight capacity: 40t`)*
+- **Look into the example below to get better understanding of the printing format.**
+
+#### Additional Notes
+
+To simplify your work you are given an already built execution engine that executes a sequence of commands read from the console using the classes and interfaces in your project.
+
+You should implement the empty classes. You can add new classes where needed and modify any of the existing code under the **models** package if necessary.
+
+Currently, the engine supports the following commands:
+
+- **RegisterUser** **(username, firstName, lastName, password, role)** - registers user, if there is no such user already
+- **Login** **(username, password)** - logs in user if there is no already logged in and there is such registered user
+- **Logout** - logs out the current logged in user
+- **AddVehicle** **(type, make, model, price, [category/seats/weightCapacity])** - adds a vehicle to the current user. The fourth parameter depends on the type of the vehicle
+- **RemoveVehicle** **(vehicleIndex)** - remove the vehicle on that index if there is such
+- **AddComment** **(content, author, vehicleIndex)** - add a comment with the content provided to the vehicle with that index and sets the author
+- **RemoveComment** **(vehicleIndex, commentIndex, username)** - removes the comment from the vehicle
+- **ShowVehicles** **(username)** - shows all the vehicles of the user
+
+Commands that you should implement yourself:
+- **ShowUsers** - shows all the users registered.
+
+**All commands return appropriate success messages. In case of invalid operation or error, the engine returns appropriate error messages.**
+
+### Step by step guide
+
+**1.** Look at the unit tests to get an idea of the required functionality for each class
+
+**2.** Implement the classes in which there is a TODO.
+- Try to understand which classes depend on which and start with those without dependencis
+- e.g. - the User class requires Comment class for some of its functionality
+- go to the unit tests to consult how the methods/attributes should be named
+
+**3.** Validate all properties according to the guidelines set above.
+
+**4.** Implement printing.
+
+- Instead of a `print()` method, you need to override `__str__` in order to output the classes in the console.
+
+**5.** Finish with the ShowUsersCommand 
+- check the other commands to see how they are done 
+
+
+#### Sample Input
+
+```none
+RegisterUser p Petar Petrov 123456
+RegisterUser pesh0= Petar Petrov 123456
+RegisterUser pesh0 Petar Petrov 1234
+RegisterUser pesh0 Petar P 123456
+RegisterUser pesh0 P Petrov 123456
+RegisterUser pesho Petar Petrov 123456
+AddVehicle Motorcycle K Z1000 9999 Race
+AddVehicle Motorcycle Kawasaki Z1000 -1000 Race
+AddVehicle Motorcycle Kawasaki Z1000 9999 N
+AddVehicle Car Opel Vectra 5000 -1
+AddVehicle Truck Volvo FH4 11800 200
+AddVehicle Motorcycle Kawasaki Z 9999 Race
+AddVehicle Car Opel Vectra 5000 5
+AddVehicle Car Mazda 6 10000 5
+AddVehicle Motorcycle Suzuki V-Strom 7500 CityEnduro
+AddVehicle Car BMW Z3 11200 2
+AddVehicle Car BMW Z3 11200 2
+AddVehicle Car BMW Z3 11200 2
+AddComment {{U}} pesho 1
+AddComment {{Amazing speed and handling!}} pesho 1
+ShowUsers
+RegisterUser pesho Petar Petrov 123457
+Logout
+RegisterUser pesho Petar Petrov 123457
+RegisterUser gosho Georgi Georgiev 123457 VIP
+Logout
+Login pesho 123456
+Login gosho 123457
+Logout
+Login gosho 123457
+AddComment {{I like this one! It is faster than all the rest!}} pesho 1
+RemoveComment 1 1 pesho
+RemoveComment 2 5 pesho
+AddVehicle Motorcycle Suzuki GSXR1000 8000 Racing
+AddVehicle Car Skoda Fabia 2000 5
+AddVehicle Car BMW 535i 7200 5
+AddVehicle Motorcycle Honda Hornet600 4150 Race
+AddVehicle Car Mercedes S500L 15000 5
+AddVehicle Car Opel Zafira 8000 5
+AddVehicle Car Opel Zafira 7450 5
+AddVehicle Truck Volvo FH4 11800 40
+ShowUsers
+Logout
+RegisterUser ivancho Ivan Ivanov admin Admin
+AddVehicle Car Skoda Fabia 2000 5
+ShowUsers
+ShowVehicles gosho
+ShowVehicles ivanch0
+AddComment {{Empty comment}} pencho 1
+AddComment {{Empty comment}} pesho 20
+RemoveComment 1 1 pesho
+ShowVehicles pesho
+Logout
+Login pesho 123456
+AddComment {{I dream of having this one one day.}} pesho 1
+Logout
+Login ivancho admin
+AddComment {{What is the mileage on it?}} pesho 3
+Logout
+Login pesho 123456
+AddComment {{This one passed my by on the highway today. So pretty!}} pesho 3
+ShowVehicles pesho
+ShowVehicles gosho
+ShowVehicles ivancho
+Logout
+Login gosho 123457
+RemoveComment 1 2 pesho
+ShowVehicles pesho
+Logout
+Login pesho 123456
+RemoveVehicle 1
+ShowVehicles pesho
+End
+```
+
+#### Sample Output
+
+```none
+Username must be between 2 and 20 characters long!
+####################
+Username contains invalid symbols!
+####################
+Password must be between 5 and 30 characters long!
+####################
+Lastname must be between 2 and 20 characters long!
+####################
+Firstname must be between 2 and 20 characters long!
+####################
+User pesho registered successfully!
+####################
+Make must be between 2 and 15 characters long!
+####################
+Price must be between 0.0 and 1000000.00!
+####################
+Category must be between 3 and 10 characters long!
+####################
+Seats must be between 1 and 10!
+####################
+Weight capacity must be between 1 and 100!
+####################
+pesho added vehicle successfully!
+####################
+pesho added vehicle successfully!
+####################
+pesho added vehicle successfully!
+####################
+pesho added vehicle successfully!
+####################
+pesho added vehicle successfully!
+####################
+You are not VIP and cannot add more than 5 vehicles!
+####################
+You are not VIP and cannot add more than 5 vehicles!
+####################
+Content must be between 3 and 200 characters long!
+####################
+pesho added comment successfully!
+####################
+You are not an admin!
+####################
+User pesho is logged in! Please log out first!
+####################
+You logged out!
+####################
+User pesho already exist. Choose a different username!
+####################
+User gosho registered successfully!
+####################
+You logged out!
+####################
+User pesho successfully logged in!
+####################
+User pesho is logged in! Please log out first!
+####################
+You logged out!
+####################
+User gosho successfully logged in!
+####################
+gosho added comment successfully!
+####################
+You are not the author of the comment you are trying to remove!
+####################
+There is no comment on this index.
+####################
+gosho added vehicle successfully!
+####################
+gosho added vehicle successfully!
+####################
+gosho added vehicle successfully!
+####################
+gosho added vehicle successfully!
+####################
+gosho added vehicle successfully!
+####################
+gosho added vehicle successfully!
+####################
+gosho added vehicle successfully!
+####################
+gosho added vehicle successfully!
+####################
+You are not an admin!
+####################
+You logged out!
+####################
+User ivancho registered successfully!
+####################
+You are an admin and therefore cannot add vehicles!
+####################
+--USERS--
+1. Username: pesho, FullName: Petar Petrov, Role: Normal
+2. Username: gosho, FullName: Georgi Georgiev, Role: VIP
+3. Username: ivancho, FullName: Ivan Ivanov, Role: Admin
+####################
+--USER gosho--
+1. Motorcycle:
+Make: Suzuki
+Model: GSXR1000
+Wheels: 2
+Price: $8000.00
+Category: Racing
+--NO COMMENTS--
+2. Car:
+Make: Skoda
+Model: Fabia
+Wheels: 4
+Price: $2000.00
+Seats: 5
+--NO COMMENTS--
+3. Car:
+Make: BMW
+Model: 535i
+Wheels: 4
+Price: $7200.00
+Seats: 5
+--NO COMMENTS--
+4. Motorcycle:
+Make: Honda
+Model: Hornet600
+Wheels: 2
+Price: $4150.00
+Category: Race
+--NO COMMENTS--
+5. Car:
+Make: Mercedes
+Model: S500L
+Wheels: 4
+Price: $15000.00
+Seats: 5
+--NO COMMENTS--
+6. Car:
+Make: Opel
+Model: Zafira
+Wheels: 4
+Price: $8000.00
+Seats: 5
+--NO COMMENTS--
+7. Car:
+Make: Opel
+Model: Zafira
+Wheels: 4
+Price: $7450.00
+Seats: 5
+--NO COMMENTS--
+8. Truck:
+Make: Volvo
+Model: FH4
+Wheels: 8
+Price: $11800.00
+Weight Capacity: 40t
+--NO COMMENTS--
+####################
+There is no user with username ivanch0!
+####################
+There is no user with username pencho!
+####################
+The vehicle does not exist!
+####################
+You are not the author of the comment you are trying to remove!
+####################
+--USER pesho--
+1. Motorcycle:
+Make: Kawasaki
+Model: Z
+Wheels: 2
+Price: $9999.00
+Category: Race
+--COMMENTS--
+----------
+Amazing speed and handling!
+User: pesho
+----------
+----------
+I like this one! It is faster than all the rest!
+User: gosho
+----------
+--COMMENTS--
+2. Car:
+Make: Opel
+Model: Vectra
+Wheels: 4
+Price: $5000.00
+Seats: 5
+--NO COMMENTS--
+3. Car:
+Make: Mazda
+Model: 6
+Wheels: 4
+Price: $10000.00
+Seats: 5
+--NO COMMENTS--
+4. Motorcycle:
+Make: Suzuki
+Model: V-Strom
+Wheels: 2
+Price: $7500.00
+Category: CityEnduro
+--NO COMMENTS--
+5. Car:
+Make: BMW
+Model: Z3
+Wheels: 4
+Price: $11200.00
+Seats: 2
+--NO COMMENTS--
+####################
+You logged out!
+####################
+User pesho successfully logged in!
+####################
+pesho added comment successfully!
+####################
+You logged out!
+####################
+User ivancho successfully logged in!
+####################
+ivancho added comment successfully!
+####################
+You logged out!
+####################
+User pesho successfully logged in!
+####################
+pesho added comment successfully!
+####################
+--USER pesho--
+1. Motorcycle:
+Make: Kawasaki
+Model: Z
+Wheels: 2
+Price: $9999.00
+Category: Race
+--COMMENTS--
+----------
+Amazing speed and handling!
+User: pesho
+----------
+----------
+I like this one! It is faster than all the rest!
+User: gosho
+----------
+----------
+I dream of having this one one day.
+User: pesho
+----------
+--COMMENTS--
+2. Car:
+Make: Opel
+Model: Vectra
+Wheels: 4
+Price: $5000.00
+Seats: 5
+--NO COMMENTS--
+3. Car:
+Make: Mazda
+Model: 6
+Wheels: 4
+Price: $10000.00
+Seats: 5
+--COMMENTS--
+----------
+What is the mileage on it?
+User: ivancho
+----------
+----------
+This one passed my by on the highway today. So pretty!
+User: pesho
+----------
+--COMMENTS--
+4. Motorcycle:
+Make: Suzuki
+Model: V-Strom
+Wheels: 2
+Price: $7500.00
+Category: CityEnduro
+--NO COMMENTS--
+5. Car:
+Make: BMW
+Model: Z3
+Wheels: 4
+Price: $11200.00
+Seats: 2
+--NO COMMENTS--
+####################
+--USER gosho--
+1. Motorcycle:
+Make: Suzuki
+Model: GSXR1000
+Wheels: 2
+Price: $8000.00
+Category: Racing
+--NO COMMENTS--
+2. Car:
+Make: Skoda
+Model: Fabia
+Wheels: 4
+Price: $2000.00
+Seats: 5
+--NO COMMENTS--
+3. Car:
+Make: BMW
+Model: 535i
+Wheels: 4
+Price: $7200.00
+Seats: 5
+--NO COMMENTS--
+4. Motorcycle:
+Make: Honda
+Model: Hornet600
+Wheels: 2
+Price: $4150.00
+Category: Race
+--NO COMMENTS--
+5. Car:
+Make: Mercedes
+Model: S500L
+Wheels: 4
+Price: $15000.00
+Seats: 5
+--NO COMMENTS--
+6. Car:
+Make: Opel
+Model: Zafira
+Wheels: 4
+Price: $8000.00
+Seats: 5
+--NO COMMENTS--
+7. Car:
+Make: Opel
+Model: Zafira
+Wheels: 4
+Price: $7450.00
+Seats: 5
+--NO COMMENTS--
+8. Truck:
+Make: Volvo
+Model: FH4
+Wheels: 8
+Price: $11800.00
+Weight Capacity: 40t
+--NO COMMENTS--
+####################
+--USER ivancho--
+--NO VEHICLES--
+####################
+You logged out!
+####################
+User gosho successfully logged in!
+####################
+gosho removed comment successfully!
+####################
+--USER pesho--
+1. Motorcycle:
+Make: Kawasaki
+Model: Z
+Wheels: 2
+Price: $9999.00
+Category: Race
+--COMMENTS--
+----------
+Amazing speed and handling!
+User: pesho
+----------
+----------
+I dream of having this one one day.
+User: pesho
+----------
+--COMMENTS--
+2. Car:
+Make: Opel
+Model: Vectra
+Wheels: 4
+Price: $5000.00
+Seats: 5
+--NO COMMENTS--
+3. Car:
+Make: Mazda
+Model: 6
+Wheels: 4
+Price: $10000.00
+Seats: 5
+--COMMENTS--
+----------
+What is the mileage on it?
+User: ivancho
+----------
+----------
+This one passed my by on the highway today. So pretty!
+User: pesho
+----------
+--COMMENTS--
+4. Motorcycle:
+Make: Suzuki
+Model: V-Strom
+Wheels: 2
+Price: $7500.00
+Category: CityEnduro
+--NO COMMENTS--
+5. Car:
+Make: BMW
+Model: Z3
+Wheels: 4
+Price: $11200.00
+Seats: 2
+--NO COMMENTS--
+####################
+You logged out!
+####################
+User pesho successfully logged in!
+####################
+pesho removed vehicle successfully!
+####################
+--USER pesho--
+1. Motorcycle:
+Make: Kawasaki
+Model: Z
+Wheels: 2
+Price: $9999.00
+Category: Race
+--COMMENTS--
+----------
+Amazing speed and handling!
+User: pesho
+----------
+----------
+I dream of having this one one day.
+User: pesho
+----------
+--COMMENTS--
+2. Car:
+Make: Mazda
+Model: 6
+Wheels: 4
+Price: $10000.00
+Seats: 5
+--COMMENTS--
+----------
+What is the mileage on it?
+User: ivancho
+----------
+----------
+This one passed my by on the highway today. So pretty!
+User: pesho
+----------
+--COMMENTS--
+3. Motorcycle:
+Make: Suzuki
+Model: V-Strom
+Wheels: 2
+Price: $7500.00
+Category: CityEnduro
+--NO COMMENTS--
+4. Car:
+Make: BMW
+Model: Z3
+Wheels: 4
+Price: $11200.00
+Seats: 2
+--NO COMMENTS--
+```
